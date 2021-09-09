@@ -1,4 +1,4 @@
-package pbouda.agents.socket;
+package pbouda.agents.core.messaging;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;

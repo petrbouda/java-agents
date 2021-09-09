@@ -1,4 +1,4 @@
-package pbouda.agents.socket;
+package pbouda.agents.core.messaging;
 
 import java.io.IOException;
 import java.net.StandardProtocolFamily;
@@ -17,20 +17,16 @@ import java.util.concurrent.Executors;
 public class InterProcessMessageExchanger implements AutoCloseable {
 
     private static final Executor EXECUTOR = Executors.newSingleThreadExecutor(
-            new NamedThreadFactory("http-agent-message-listener"));
+            new NamedThreadFactory("agent-listener"));
 
-    private static final String SOCKET_FILE_TEMPLATE = "http-agent-%s.socket";
+    private static final String SOCKET_FILE_TEMPLATE = "%s-%s.socket";
 
     private final Path socketFile;
 
     private volatile ServerSocketChannel serverChannel;
 
-    public InterProcessMessageExchanger() {
-        this(socketFilePath());
-    }
-
-    public InterProcessMessageExchanger(long pid) {
-        this(socketFilePath(pid));
+    public InterProcessMessageExchanger(String agentName, long pid) {
+        this(socketFilePath(agentName, pid));
     }
 
     public InterProcessMessageExchanger(Path socketFile) {
@@ -75,14 +71,9 @@ public class InterProcessMessageExchanger implements AutoCloseable {
         }
     }
 
-    public static Path socketFilePath() {
-        return socketFilePath(ProcessHandle.current().pid());
-    }
-
-    public static Path socketFilePath(long pid) {
-        String filename = SOCKET_FILE_TEMPLATE.formatted(pid);
+    public static Path socketFilePath(String agentName, long pid) {
         return Path.of(System.getProperty("java.io.tmpdir"))
-                .resolve(filename);
+                .resolve(SOCKET_FILE_TEMPLATE.formatted(agentName, pid));
     }
 
     private static ServerSocketChannel initUnixSocketServer(Path socketFile) throws IOException {
@@ -134,7 +125,7 @@ public class InterProcessMessageExchanger implements AutoCloseable {
         if (serverChannel != null) {
             try {
                 serverChannel.close();
-                Files.deleteIfExists(socketFilePath());
+                Files.deleteIfExists(socketFile);
             } catch (IOException e) {
                 throw new RuntimeException("Cannot close Unix Socket for MessageExchanger", e);
             }

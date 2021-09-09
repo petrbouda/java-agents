@@ -1,13 +1,14 @@
 package pbouda.agents.socket;
 
-import pbouda.agents.socket.advice.SocketCloseAdvice;
-import pbouda.agents.socket.advice.SocketConnectAdvice;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
 import net.bytebuddy.agent.builder.ResettableClassFileTransformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import pbouda.agents.core.messaging.Messenger;
+import pbouda.agents.socket.advice.SocketCloseAdvice;
+import pbouda.agents.socket.advice.SocketConnectAdvice;
 
 import java.lang.instrument.Instrumentation;
 import java.net.Socket;
@@ -16,17 +17,17 @@ import java.util.List;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.none;
 
-public class HttpAgent {
+public class SocketAgent {
 
     public static void premain(String agentArgs, Instrumentation inst) {
-        startAgent(inst);
+        startAgent(agentArgs, inst);
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
-        startAgent(inst);
+        startAgent(agentArgs, inst);
     }
 
-    private static void startAgent(Instrumentation inst) {
+    private static void startAgent(String agentName, Instrumentation inst) {
         ElementMatcher<? super MethodDescription> connectMatcher = methodDesc ->
                 methodDesc.isMethod()
                 && methodDesc.getActualName().equals("connect")
@@ -50,17 +51,6 @@ public class HttpAgent {
                 }))
                 .installOn(inst);
 
-        InterProcessMessageExchanger exchanger = new InterProcessMessageExchanger();
-
-        List<MessageCommand> commands = List.of(
-                new MessageCommand("", () -> System.out.println("Empty message received")),
-                new MessageCommand("close", () -> {
-                    transformer.reset(inst, RedefinitionStrategy.RETRANSFORMATION);
-                    exchanger.close();
-                    System.out.println("Resetting JavaAgent's transformations");
-                })
-        );
-
-        exchanger.listen(commands);
+        Messenger.install(agentName, inst, List.of(transformer));
     }
 }

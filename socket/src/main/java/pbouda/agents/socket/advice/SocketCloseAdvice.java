@@ -3,11 +3,7 @@ package pbouda.agents.socket.advice;
 import net.bytebuddy.asm.Advice;
 
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.time.Duration;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 
 public class SocketCloseAdvice {
 

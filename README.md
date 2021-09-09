@@ -10,10 +10,10 @@
 
 ```
 # Attach the agent to the running JVM instance:
-java -jar http-agent.jar <command> --pid <pid>
+java -jar socket-agent.jar <command> --pid <pid>
 
 # Automatically it's uses PID 1 (JVM in containers)
-java -jar http-agent.jar <command>
+java -jar socket-agent.jar <command>
 
 <command>
     --attach    attach the agent to the process

@@ -1,4 +1,4 @@
-package pbouda.agents.socket;
+package pbouda.agents.core;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 public enum Flag {
 
     PID("--pid"),
+    NAME("--name"),
     CLOSE("--close", true),
     ATTACH("--attach", true);
 
