@@ -1,0 +1,32 @@
+package pbouda.agents.socket.advice;
+
+import net.bytebuddy.asm.Advice;
+
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+
+public class SocketCloseAdvice {
+
+    private static final String LOG = """
+            {"logger": "http-agent", "elapsed": %s, "thread": "%s", "message": "%s"}""";
+
+    @Advice.OnMethodEnter
+    static long onEnter() {
+        return System.nanoTime();
+    }
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
+    static void onExit(
+            @Advice.This Socket current,
+            @Advice.Enter long time) {
+
+        long elapsed = Duration.ofNanos(System.nanoTime() - time).toMillis();
+        String message = "Socket #close: address=" + current.getInetAddress();
+        String formatted = LOG.formatted(elapsed, Thread.currentThread().getName(), message);
+        System.out.println(formatted);
+    }
+}
