@@ -5,33 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>pbouda.agent</groupId>
-        <artifactId>parent</artifactId>
+        <groupId>pbouda.empty</groupId>
+        <artifactId>learning</artifactId>
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>socket</artifactId>
-
-    <dependencies>
-        <dependency>
-            <groupId>pbouda.agent</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy-agent</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <artifactId>agent</artifactId>
 
     <build>
         <plugins>
@@ -43,13 +22,13 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <finalName>socket-agent</finalName>
+                    <finalName>empty-agent</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifestEntries>
-                            <Main-Class>pbouda.agents.core.Attacher</Main-Class>
-                            <Premain-Class>pbouda.agents.socket.SocketAgent</Premain-Class>
-                            <Agent-Class>pbouda.agents.socket.SocketAgent</Agent-Class>
+                            <Main-Class>pbouda.empty.agent.Start</Main-Class>
+                            <Premain-Class>pbouda.empty.agent.AgentMain</Premain-Class>
+                            <Agent-Class>pbouda.empty.agent.AgentMain</Agent-Class>
                             <Can-Redefine-Classes>true</Can-Redefine-Classes>
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>
                         </manifestEntries>

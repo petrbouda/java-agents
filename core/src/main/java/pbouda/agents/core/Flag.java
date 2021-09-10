@@ -8,10 +8,7 @@ import java.util.stream.Collectors;
 
 public enum Flag {
 
-    PID("--pid"),
-    NAME("--name"),
-    CLOSE("--close", true),
-    ATTACH("--attach", true);
+    PID("--pid");
 
     private static final String COMMAND_DELIMITER = "--";
 

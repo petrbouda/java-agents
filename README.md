@@ -8,14 +8,9 @@
 
 ### Usages
 
+- it works as a switcher between APPLIED and RESET transformations (the first invocation starts transformations, the second reset them) 
+
 ```
-# Attach the agent to the running JVM instance:
-java -jar socket-agent.jar <command> --pid <pid>
-
-# Automatically it's uses PID 1 (JVM in containers)
-java -jar socket-agent.jar <command>
-
-<command>
-    --attach    attach the agent to the process
-    --close     close the agent (remove all transformations)
+# Attach the agent to the running JVM instance (Automatically it's uses PID 1 (JVM in containers))
+java -jar socket-agent.jar --pid <pid>
 ```

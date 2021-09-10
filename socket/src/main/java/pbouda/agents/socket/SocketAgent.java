@@ -6,28 +6,42 @@ import net.bytebuddy.agent.builder.ResettableClassFileTransformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import pbouda.agents.core.messaging.Messenger;
 import pbouda.agents.socket.advice.SocketCloseAdvice;
 import pbouda.agents.socket.advice.SocketConnectAdvice;
 
 import java.lang.instrument.Instrumentation;
 import java.net.Socket;
-import java.util.List;
 
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.none;
 
 public class SocketAgent {
 
+    private static Instrumentation instrumentation;
+    private static ResettableClassFileTransformer transformer;
+
     public static void premain(String agentArgs, Instrumentation inst) {
-        startAgent(agentArgs, inst);
+        _start(inst);
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
-        startAgent(agentArgs, inst);
+        _start(inst);
     }
 
-    private static void startAgent(String agentName, Instrumentation inst) {
+    private static void _start(Instrumentation inst) {
+        if (instrumentation == null && transformer == null) {
+            instrumentation = inst;
+            transformer = transformation(inst);
+            System.out.println("[INFO] Agent applied: " + SocketAgent.class.getSimpleName());
+        } else {
+            transformer.reset(instrumentation, RedefinitionStrategy.RETRANSFORMATION);
+            transformer = null;
+            instrumentation = null;
+            System.out.println("[INFO] Agent reset: " + SocketAgent.class.getSimpleName());
+        }
+    }
+
+    private static ResettableClassFileTransformer transformation(Instrumentation inst) {
         ElementMatcher<? super MethodDescription> connectMatcher = methodDesc ->
                 methodDesc.isMethod()
                 && methodDesc.getActualName().equals("connect")
@@ -51,6 +65,6 @@ public class SocketAgent {
                 }))
                 .installOn(inst);
 
-        Messenger.install(agentName, inst, List.of(transformer));
+        return transformer;
     }
 }

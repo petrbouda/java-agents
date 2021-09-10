@@ -1,6 +1,8 @@
 package pbouda.agents.socket;
 
 import net.bytebuddy.agent.ByteBuddyAgent;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -22,11 +24,20 @@ public class SocketTest {
         }
     }
 
+    @BeforeEach
+    public void setup() {
+        Instrumentation inst = ByteBuddyAgent.install();
+        SocketAgent.premain(null, inst);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        Instrumentation inst = ByteBuddyAgent.install();
+        SocketAgent.premain(null, inst);
+    }
+
     @Test
     public void connect() throws Exception {
-        Instrumentation inst = ByteBuddyAgent.install();
-        HttpAgent.premain(null, inst);
-
         startServer();
 
         Predicate<String> predicate = line -> line.contains("Socket #connect");
@@ -38,9 +49,6 @@ public class SocketTest {
 
     @Test
     public void close() throws Exception {
-        Instrumentation inst = ByteBuddyAgent.install();
-        HttpAgent.premain(null, inst);
-
         startServer();
 
         Predicate<String> predicate = line -> line.contains("Socket #close");

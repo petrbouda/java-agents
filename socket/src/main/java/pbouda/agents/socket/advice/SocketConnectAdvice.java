@@ -8,7 +8,7 @@ import java.time.Duration;
 public class SocketConnectAdvice {
 
     private static final String LOG = """
-            {"logger": "http-agent", "elapsed": %s, "thread": "%s", "message": "%s"}""";
+            {"logger": "socket-agent", "elapsed": %s, "thread": "%s", "message": "%s"}""";
 
     @Advice.OnMethodEnter
     static long onEnter() {
