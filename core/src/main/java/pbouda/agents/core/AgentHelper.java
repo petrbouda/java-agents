@@ -15,14 +15,25 @@ import java.util.function.Function;
  */
 public abstract class AgentHelper {
 
+    private static final Runnable EMPTY_CLEANUP = () -> {};
+
     private static final Map<Class<?>, List<ResettableClassFileTransformer>> TRANSFORMERS = new HashMap<>();
 
     private static Instrumentation instrumentation;
 
-    public static void trigger(
+    public static void execute(
             Class<?> agentClazz,
             Instrumentation inst,
             Function<Instrumentation, List<ResettableClassFileTransformer>> transformFn) {
+
+        execute(agentClazz, inst, transformFn, EMPTY_CLEANUP);
+    }
+
+    public static void execute(
+            Class<?> agentClazz,
+            Instrumentation inst,
+            Function<Instrumentation, List<ResettableClassFileTransformer>> transformFn,
+            Runnable cleanup) {
 
         if (instrumentation == null) {
             instrumentation = inst;
@@ -36,6 +47,7 @@ public abstract class AgentHelper {
         } else {
             transformers.forEach(t -> t.reset(instrumentation, RedefinitionStrategy.RETRANSFORMATION));
             TRANSFORMERS.remove(agentClazz);
+            cleanup.run();
             System.out.println("[INFO] Agent reset: " + agentClazz.getSimpleName());
         }
     }
