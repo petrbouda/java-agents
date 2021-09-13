@@ -14,27 +14,27 @@ public abstract class SocketLifespanKeeperUtils {
     private static boolean initialized = false;
 
     public static final String FIELD_NAME = "lifespan";
-    public static final String CLASS_NAME = "pbouda.agents.socket.LifespanKeeper";
+    public static final String CLASS_NAME = "pbouda.agents.socket.advice.SocketLifespanKeeper";
 
     public synchronized static void initialize() {
         if (!initialized) {
             TypeDefinition generatedType = TypeDescription.Generic.Builder.parameterizedType(
-                    Map.class, Object.class, Long.class).build();
+                    ConcurrentHashMap.class, Integer.class, Long.class).build();
 
             Map<TypeDescription, byte[]> types = new ByteBuddy()
                     .subclass(Object.class)
-                    .defineField(SocketLifespanKeeperUtils.FIELD_NAME, generatedType,
-                            Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC)
-                    .name(SocketLifespanKeeperUtils.CLASS_NAME)
+                    .defineField(FIELD_NAME, generatedType, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC)
+                    .name(CLASS_NAME)
                     .make()
                     .getAllTypes();
 
             ClassInjector.UsingUnsafe.ofBootLoader()
                     .inject(types);
 
-            setLifespan(new ConcurrentHashMap<>());
             initialized = true;
         }
+
+        setLifespan(new ConcurrentHashMap<>());
     }
 
     public static void cleanup() {
@@ -43,7 +43,7 @@ public abstract class SocketLifespanKeeperUtils {
 
     private static void setLifespan(Map<Integer, Long> map) {
         try {
-            Class.forName(CLASS_NAME)
+            Class.forName(SocketLifespanKeeper.class.getName())
                     .getField(FIELD_NAME)
                     .set(null, map);
         } catch (IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
