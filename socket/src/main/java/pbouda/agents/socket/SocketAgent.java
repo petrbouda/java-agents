@@ -44,6 +44,8 @@ public class SocketAgent {
 
         ResettableClassFileTransformer transformer = new AgentBuilder.Default()
                 .disableClassFormatChanges()
+                .with(new AgentBuilder.Listener.WithErrorsOnly(AgentBuilder.Listener.StreamWriting.toSystemOut()))
+                .with(new AgentBuilder.Listener.WithTransformationsOnly(AgentBuilder.Listener.StreamWriting.toSystemOut()))
                 .with(RedefinitionStrategy.RETRANSFORMATION)
                 // Allow matching classes from Platform Classloader
                 .ignore(none())

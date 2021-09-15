@@ -5,6 +5,7 @@ import net.bytebuddy.description.type.TypeDefinition;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.loading.ClassInjector;
 import net.bytebuddy.jar.asm.Opcodes;
+import pbouda.agents.core.bytecode.appender.StaticFieldAssigner;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +24,8 @@ public abstract class SocketLifespanKeeperUtils {
 
             Map<TypeDescription, byte[]> types = new ByteBuddy()
                     .subclass(Object.class)
-                    .defineField(FIELD_NAME, generatedType, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC)
+                    .defineField(FIELD_NAME, generatedType, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL)
+                    .initializer(new StaticFieldAssigner(CLASS_NAME, FIELD_NAME, ConcurrentHashMap.class))
                     .name(CLASS_NAME)
                     .make()
                     .getAllTypes();
@@ -33,21 +35,9 @@ public abstract class SocketLifespanKeeperUtils {
 
             initialized = true;
         }
-
-        setLifespan(new ConcurrentHashMap<>());
     }
 
     public static void cleanup() {
-        setLifespan(null);
-    }
-
-    private static void setLifespan(Map<Integer, Long> map) {
-        try {
-            Class.forName(SocketLifespanKeeper.class.getName())
-                    .getField(FIELD_NAME)
-                    .set(null, map);
-        } catch (IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        SocketLifespanKeeper.lifespan.clear();
     }
 }
