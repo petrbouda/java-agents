@@ -11,6 +11,6 @@
 - it works as a switcher between APPLIED and RESET transformations (the first invocation starts transformations, the second reset them) 
 
 ```
-# Attach the agent to the running JVM instance (Automatically it's uses PID 1 (JVM in containers))
+# Attach the agent to the running JVM instance (Automatically, it uses PID 1 (JVM in containers))
 java -jar socket-agent.jar --pid <pid>
 ```
