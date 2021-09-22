@@ -1,6 +1,7 @@
 package pbouda.agents.socket.advice;
 
 import net.bytebuddy.asm.Advice;
+import pbouda.agents.socket.SocketLifespanHolder;
 
 import java.net.InetAddress;
 import java.time.Duration;
@@ -20,17 +21,17 @@ public class NioSocketCloseAdvice {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     static void onExit(
             @Advice.This Object current,
-            @Advice.FieldValue(value = "port") int port,
-            @Advice.FieldValue(value = "address") InetAddress address,
+            @Advice.FieldValue("port") int port,
+            @Advice.FieldValue("address") InetAddress address,
             @Advice.Enter long time) {
 
         long now = System.nanoTime();
         long elapsed = Duration.ofNanos(now - time).toMillis();
 
-        System.out.println("lifespan: " + SocketLifespanKeeper.lifespan);
+        System.out.println("lifespan: " + SocketLifespanHolder.data);
 
         int connectionId = current.hashCode();
-        Long timestamp = SocketLifespanKeeper.lifespan.remove(connectionId);
+        Long timestamp = SocketLifespanHolder.data.remove(connectionId);
         Duration lifespan = timestamp != null
                 ? Duration.ofNanos(now - timestamp)
                 : Duration.ofMillis(UNKNOWN);

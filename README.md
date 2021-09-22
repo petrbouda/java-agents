@@ -18,5 +18,5 @@ java -jar socket-agent.jar --pid <pid>
 ### OpenJDK versions
 
 - it's set up for Java 17, and it counts on: https://openjdk.java.net/jeps/353 
-- OpenJDK 17 (since OpenJDK 13): `java.net.Socket` uses by default `sun.nio.ch.NioSocketImpl` (to become non-blocking for Loom Project)
+- OpenJDK 17 (since OpenJDK 13): `java.net.Socket` uses by default `sun.nio.ch.NioSocketImpl` (to become non-blocking for Loom Project )
 - OpenJDK 11: `java.net.Socket` uses by default `java.net.PlainSocketImp`

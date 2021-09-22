@@ -3,9 +3,8 @@ package pbouda.agents.socket;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import pbouda.agents.socket.advice.SocketLifespanKeeperUtils;
+import pbouda.agents.coretest.AssertOutput;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;

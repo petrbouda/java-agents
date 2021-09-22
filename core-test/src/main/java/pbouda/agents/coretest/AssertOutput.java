@@ -1,19 +1,24 @@
-package pbouda.agents.socket;
+package pbouda.agents.coretest;
+
+import org.junit.jupiter.api.Assertions;
 
 import java.io.*;
 import java.time.Duration;
+import java.util.List;
 import java.util.function.Predicate;
-
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class AssertOutput implements AutoCloseable {
 
     private final PrintStream old;
-    private final Predicate<String> predicate;
+    private final List<Predicate<String>> predicates;
     private final ByteArrayOutputStream content;
 
     public AssertOutput(Predicate<String> predicate) {
-        this.predicate = predicate;
+        this(List.of(predicate));
+    }
+
+    public AssertOutput(List<Predicate<String>> predicates) {
+        this.predicates = predicates;
         this.content = new ByteArrayOutputStream();
         this.old = System.out;
         System.setOut(new PrintStream(content));
@@ -24,14 +29,17 @@ public class AssertOutput implements AutoCloseable {
             long start = System.nanoTime();
             BufferedReader reader = new BufferedReader(new StringReader(content.toString()));
 
+            int cursor = 0;
             for (String line = reader.readLine(); (System.nanoTime() - start) < duration.toNanos(); line = reader.readLine()) {
-                if (line != null && predicate.test(line)) {
-                    return;
+                if (line != null && predicates.get(cursor).test(line)) {
+                    if (++cursor == predicates.size()) {
+                        return;
+                    }
                 }
             }
-            fail();
+            Assertions.fail();
         } catch (IOException e) {
-            fail(e);
+            Assertions.fail(e);
         }
     }
 

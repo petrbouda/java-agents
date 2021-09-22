@@ -1,6 +1,7 @@
 package pbouda.agents.socket.advice;
 
 import net.bytebuddy.asm.Advice;
+import pbouda.agents.socket.SocketLifespanHolder;
 
 import java.net.SocketAddress;
 import java.time.Duration;
@@ -29,7 +30,7 @@ public class NioSocketConnectAdvice {
         String message;
         if (throwable == null) {
             // NioSocketImpl uses the Default Identity Hashcode
-            SocketLifespanKeeper.lifespan.put(connectionId, now);
+            SocketLifespanHolder.data.put(connectionId, now);
             message = "Socket #connect: address=" + address + " timeout=" + timeout;
         } else {
             message = "Socket #connect: address=" + address

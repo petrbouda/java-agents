@@ -1,4 +1,4 @@
-package pbouda.agents.socket;
+package pbouda.agents.file;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.RedefinitionStrategy;
@@ -8,40 +8,41 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import pbouda.agents.core.AgentHelper;
 import pbouda.agents.core.MapHolderUtils;
-import pbouda.agents.socket.advice.NioSocketCloseAdvice;
-import pbouda.agents.socket.advice.NioSocketConnectAdvice;
+import pbouda.agents.core.UtilsInitializer;
+import pbouda.agents.file.advice.FileCloseAdvice;
+import pbouda.agents.file.advice.FileOpenAdvice;
 
+import java.io.FileDescriptor;
 import java.lang.instrument.Instrumentation;
-import java.net.SocketAddress;
 import java.util.List;
 
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.none;
 
-public class SocketAgent {
+public class FileAgent {
 
-    private static final String DATA_KEEPER_CLASS_NAME = "pbouda.agents.socket.SocketLifespanHolder";
+    private static final String DATA_KEEPER_CLASS_NAME = "pbouda.agents.file.FileDescriptorHolder";
 
     public static void premain(String agentArgs, Instrumentation inst) {
-        AgentHelper.execute(SocketAgent.class, inst, SocketAgent::transformation, () -> MapHolderUtils.reset(DATA_KEEPER_CLASS_NAME));
+        AgentHelper.execute(FileAgent.class, inst, FileAgent::transformation, () -> MapHolderUtils.reset(DATA_KEEPER_CLASS_NAME));
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
-        AgentHelper.execute(SocketAgent.class, inst, SocketAgent::transformation, () -> MapHolderUtils.reset(DATA_KEEPER_CLASS_NAME));
+        AgentHelper.execute(FileAgent.class, inst, FileAgent::transformation, () -> MapHolderUtils.reset(DATA_KEEPER_CLASS_NAME));
     }
 
     private static List<ResettableClassFileTransformer> transformation(Instrumentation inst) {
-        ElementMatcher<? super MethodDescription> connectMatcher = methodDesc ->
+        ElementMatcher<? super MethodDescription> openMatcher = methodDesc ->
                 methodDesc.isMethod()
-                && methodDesc.getActualName().equals("connect")
-                && methodDesc.getParameters().get(0).getType().asErasure().getName().equals(SocketAddress.class.getName());
+                && methodDesc.getActualName().equals("open")
+                && methodDesc.getParameters().get(0).getType().asErasure().getName().equals(FileDescriptor.class.getName());
 
         ElementMatcher<? super MethodDescription> closeMatcher = methodDesc ->
                 methodDesc.isMethod()
-                && methodDesc.getActualName().equals("close")
-                && methodDesc.getParameters().size() == 0;
+                && methodDesc.getActualName().equals("implCloseChannel");
 
-        MapHolderUtils.initialize(DATA_KEEPER_CLASS_NAME, Integer.class, Long.class);
+        MapHolderUtils.initialize(DATA_KEEPER_CLASS_NAME, Integer.class, String.class);
+        UtilsInitializer.initialize();
 
         ResettableClassFileTransformer transformer = new AgentBuilder.Default()
                 .disableClassFormatChanges()
@@ -50,11 +51,11 @@ public class SocketAgent {
                 .with(RedefinitionStrategy.RETRANSFORMATION)
                 // Allow matching classes from Platform Classloader
                 .ignore(none())
-                .type(named("sun.nio.ch.NioSocketImpl"))
+                .type(named("sun.nio.ch.FileChannelImpl"))
                 .transform((builder, typeDescription, classLoader, module) -> {
                     return builder
-                            .visit(Advice.to(NioSocketConnectAdvice.class).on(connectMatcher))
-                            .visit(Advice.to(NioSocketCloseAdvice.class).on(closeMatcher));
+                            .visit(Advice.to(FileOpenAdvice.class).on(openMatcher))
+                            .visit(Advice.to(FileCloseAdvice.class).on(closeMatcher));
                 })
                 .installOn(inst);
 
