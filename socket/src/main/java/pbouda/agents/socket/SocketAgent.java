@@ -8,6 +8,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import pbouda.agents.core.AgentHelper;
 import pbouda.agents.core.MapHolderUtils;
+import pbouda.agents.core.UtilsInitializer;
 import pbouda.agents.socket.advice.NioSocketCloseAdvice;
 import pbouda.agents.socket.advice.NioSocketConnectAdvice;
 
@@ -40,6 +41,8 @@ public class SocketAgent {
                 methodDesc.isMethod()
                 && methodDesc.getActualName().equals("close")
                 && methodDesc.getParameters().size() == 0;
+
+        UtilsInitializer.initialize();
 
         MapHolderUtils.initialize(DATA_KEEPER_CLASS_NAME, Integer.class, Long.class);
 

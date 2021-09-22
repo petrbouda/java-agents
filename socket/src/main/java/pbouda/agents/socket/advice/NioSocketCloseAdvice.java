@@ -2,7 +2,9 @@ package pbouda.agents.socket.advice;
 
 import net.bytebuddy.asm.Advice;
 import pbouda.agents.socket.SocketLifespanHolder;
+import sun.nio.ch.Utils;
 
+import java.io.FileDescriptor;
 import java.net.InetAddress;
 import java.time.Duration;
 
@@ -11,33 +13,28 @@ public class NioSocketCloseAdvice {
     private static final int UNKNOWN = -1;
 
     private static final String LOG = """
-            {"logger": "socket-agent", "connection_id": %s, "elapsed": %s, "lifespan": %s, "thread": "%s", "message": "%s"}""";
+            {"logger": "socket-agent", "file_descriptor": %s, "lifespan": %s, "thread": "%s", "message": "%s"}""";
 
     @Advice.OnMethodEnter
-    static long onEnter() {
-        return System.nanoTime();
+    static int onEnter(@Advice.FieldValue("fd") FileDescriptor fd) {
+        return Utils.fdVal(fd);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     static void onExit(
-            @Advice.This Object current,
             @Advice.FieldValue("port") int port,
             @Advice.FieldValue("address") InetAddress address,
-            @Advice.Enter long time) {
+            @Advice.Enter int fdValue) {
 
         long now = System.nanoTime();
-        long elapsed = Duration.ofNanos(now - time).toMillis();
 
-        System.out.println("lifespan: " + SocketLifespanHolder.data);
-
-        int connectionId = current.hashCode();
-        Long timestamp = SocketLifespanHolder.data.remove(connectionId);
+        Long timestamp = SocketLifespanHolder.data.remove(fdValue);
         Duration lifespan = timestamp != null
                 ? Duration.ofNanos(now - timestamp)
                 : Duration.ofMillis(UNKNOWN);
 
-        String message = "Socket #close: address=" + address + ":" + port;
-        String formatted = LOG.formatted(connectionId, elapsed, lifespan.toMillis(), Thread.currentThread().getName(), message);
+        String message = "Socket #close: address=" + address + ":" + port + " fd=" + fdValue;
+        String formatted = LOG.formatted(fdValue, lifespan.toMillis(), Thread.currentThread().getName(), message);
         System.out.println(formatted);
     }
 }

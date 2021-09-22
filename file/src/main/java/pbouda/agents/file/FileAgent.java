@@ -45,7 +45,6 @@ public class FileAgent {
                 .with(new AgentBuilder.Listener.WithErrorsOnly(AgentBuilder.Listener.StreamWriting.toSystemOut()))
                 .with(new AgentBuilder.Listener.WithTransformationsOnly(AgentBuilder.Listener.StreamWriting.toSystemOut()))
                 .with(RedefinitionStrategy.RETRANSFORMATION)
-                // Allow matching classes from Platform Classloader
                 .ignore(none())
                 .type(named("sun.nio.ch.FileChannelImpl"))
                 .transform((builder, typeDescription, classLoader, module) -> {
