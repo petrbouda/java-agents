@@ -7,7 +7,6 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import pbouda.agents.core.AgentHelper;
-import pbouda.agents.core.MapHolderUtils;
 import pbouda.agents.core.UtilsInitializer;
 import pbouda.agents.file.advice.FileCloseAdvice;
 import pbouda.agents.file.advice.FileOpenAdvice;
@@ -21,14 +20,12 @@ import static net.bytebuddy.matcher.ElementMatchers.none;
 
 public class FileAgent {
 
-    private static final String DATA_KEEPER_CLASS_NAME = "pbouda.agents.file.FileDescriptorHolder";
-
     public static void premain(String agentArgs, Instrumentation inst) {
-        AgentHelper.execute(FileAgent.class, inst, FileAgent::transformation, () -> MapHolderUtils.reset(DATA_KEEPER_CLASS_NAME));
+        AgentHelper.execute(FileAgent.class, inst, FileAgent::transformation);
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
-        AgentHelper.execute(FileAgent.class, inst, FileAgent::transformation, () -> MapHolderUtils.reset(DATA_KEEPER_CLASS_NAME));
+        AgentHelper.execute(FileAgent.class, inst, FileAgent::transformation);
     }
 
     private static List<ResettableClassFileTransformer> transformation(Instrumentation inst) {
@@ -41,7 +38,6 @@ public class FileAgent {
                 methodDesc.isMethod()
                 && methodDesc.getActualName().equals("implCloseChannel");
 
-        MapHolderUtils.initialize(DATA_KEEPER_CLASS_NAME, Integer.class, String.class);
         UtilsInitializer.initialize();
 
         ResettableClassFileTransformer transformer = new AgentBuilder.Default()
