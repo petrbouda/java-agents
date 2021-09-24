@@ -23,6 +23,9 @@ import static java.nio.file.StandardOpenOption.*;
 
 public class FileTest {
 
+    private static final Predicate<String> OPEN = line -> line.contains("File #open");
+    private static final Predicate<String> CLOSE = line -> line.contains("File #close");
+
     @BeforeEach
     public void setup() {
         Instrumentation inst = ByteBuddyAgent.install();
@@ -37,10 +40,7 @@ public class FileTest {
 
     @Test
     public void fileChannelDirect(@TempDir Path temp) throws Exception {
-        Predicate<String> open = line -> line.contains("File #open");
-        Predicate<String> close = line -> line.contains("File #close");
-
-        try (var assertion = new AssertOutput(List.of(open, close))) {
+        try (var assertion = new AssertOutput(List.of(OPEN, CLOSE))) {
             try (FileChannel ignored = FileChannel.open(temp.resolve("file.txt"), CREATE, WRITE)) {
             }
             assertion.waitForAssertion(Duration.ofSeconds(1));
@@ -49,10 +49,7 @@ public class FileTest {
 
     @Test
     public void bufferedWriter(@TempDir Path temp) throws Exception {
-        Predicate<String> open = line -> line.contains("File #open");
-        Predicate<String> close = line -> line.contains("File #close");
-
-        try (var assertion = new AssertOutput(List.of(open, close))) {
+        try (var assertion = new AssertOutput(List.of(OPEN, CLOSE))) {
             try (Writer ignored = Files.newBufferedWriter(temp.resolve("file.txt"), CREATE_NEW)) {
             }
             assertion.waitForAssertion(Duration.ofSeconds(1));
@@ -61,11 +58,8 @@ public class FileTest {
 
     @Test
     public void bufferedRead(@TempDir Path temp) throws Exception {
-        Predicate<String> open = line -> line.contains("File #open");
-        Predicate<String> close = line -> line.contains("File #close");
-
         Path tempFile = Files.createFile(temp.resolve("file.txt"));
-        try (var assertion = new AssertOutput(List.of(open, close))) {
+        try (var assertion = new AssertOutput(List.of(OPEN, CLOSE))) {
             try (Reader ignored = Files.newBufferedReader(tempFile)) {
             }
             assertion.waitForAssertion(Duration.ofSeconds(1));
@@ -74,10 +68,7 @@ public class FileTest {
 
     @Test
     public void outputStream(@TempDir Path temp) throws Exception {
-        Predicate<String> open = line -> line.contains("File #open");
-        Predicate<String> close = line -> line.contains("File #close");
-
-        try (var assertion = new AssertOutput(List.of(open, close))) {
+        try (var assertion = new AssertOutput(List.of(OPEN, CLOSE))) {
             try (OutputStream ignored = Files.newOutputStream(temp.resolve("file.txt"), CREATE_NEW)) {
             }
             assertion.waitForAssertion(Duration.ofSeconds(1));
@@ -86,11 +77,8 @@ public class FileTest {
 
     @Test
     public void inputStream(@TempDir Path temp) throws Exception {
-        Predicate<String> open = line -> line.contains("File #open");
-        Predicate<String> close = line -> line.contains("File #close");
-
         Path tempFile = Files.createFile(temp.resolve("file.txt"));
-        try (var assertion = new AssertOutput(List.of(open, close))) {
+        try (var assertion = new AssertOutput(List.of(OPEN, CLOSE))) {
             try (InputStream ignored = Files.newInputStream(tempFile)) {
             }
             assertion.waitForAssertion(Duration.ofSeconds(1));

@@ -1,4 +1,4 @@
-package pbouda.agents.socket.advice;
+package pbouda.agents.socket.niosocketimpl.advice;
 
 import net.bytebuddy.asm.Advice;
 import pbouda.agents.socket.SocketLifespanHolder;
@@ -6,9 +6,10 @@ import sun.nio.ch.Utils;
 
 import java.io.FileDescriptor;
 import java.net.InetAddress;
+import java.net.SocketAddress;
 import java.time.Duration;
 
-public class NioSocketCloseAdvice {
+public class NioSocketImplCloseAdvice {
 
     private static final int UNKNOWN = -1;
 
@@ -33,7 +34,7 @@ public class NioSocketCloseAdvice {
                 ? Duration.ofNanos(now - timestamp)
                 : Duration.ofMillis(UNKNOWN);
 
-        String message = "Socket #close: address=" + address + ":" + port + " fd=" + fdValue;
+        String message = "JDK NioSocketImpl#close: address=" + address + ":" + port + " fd=" + fdValue;
         String formatted = LOG.formatted(fdValue, lifespan.toMillis(), Thread.currentThread().getName(), message);
         System.out.println(formatted);
     }

@@ -3,19 +3,17 @@ package pbouda.agents.socket;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import pbouda.agents.coretest.AssertOutput;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
-import java.net.*;
-import java.time.Duration;
-import java.util.function.Predicate;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
-public class SocketTest {
+public abstract class AbstractServerTest {
 
-    private static final InetAddress LOCALHOST;
-    private static final int PORT = findRandomFreePort();
+    static final InetAddress LOCALHOST;
 
     static {
         try {
@@ -37,32 +35,10 @@ public class SocketTest {
         SocketAgent.premain(null, inst);
     }
 
-    @Test
-    public void connect() throws Exception {
-        startServer();
-
-        Predicate<String> predicate = line -> line.contains("Socket #connect");
-        try (AssertOutput assertion = new AssertOutput(predicate); Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(LOCALHOST, PORT));
-            assertion.waitForAssertion(Duration.ofSeconds(1));
-        }
-    }
-
-    @Test
-    public void close() throws Exception {
-        startServer();
-
-        Predicate<String> predicate = line -> line.contains("Socket #close");
-        try (AssertOutput assertion = new AssertOutput(predicate); Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(LOCALHOST, PORT));
-            socket.close();
-            assertion.waitForAssertion(Duration.ofSeconds(1));
-        }
-    }
-
-    private static void startServer() {
+    int startServer() {
+        int port = findRandomFreePort();
         Runnable accept = () -> {
-            try (ServerSocket serverSocket = new ServerSocket(PORT, 0, LOCALHOST)) {
+            try (ServerSocket serverSocket = new ServerSocket(port, 0, LOCALHOST)) {
                 Socket in = serverSocket.accept();
                 System.out.println("Connected: " + in.getLocalAddress() + ":" + in.getLocalPort());
             } catch (IOException e) {
@@ -72,6 +48,8 @@ public class SocketTest {
 
         Thread thread = new Thread(accept);
         thread.start();
+
+        return port;
     }
 
     private static int findRandomFreePort() {
